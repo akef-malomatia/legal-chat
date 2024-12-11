@@ -8,7 +8,6 @@ from azure.core.credentials import AzureKeyCredential
 
 import os
 from dotenv import load_dotenv
-import logging
 
 if __name__ == "__main__":
     load_dotenv()
@@ -16,8 +15,11 @@ if __name__ == "__main__":
     openaiEndpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
     search_api_key = os.getenv("AZURE_SEARCH_API_KEY")
+    container_name = os.getenv("CONTAINER_NAME")
+    connection_string = os.getenv("AZURE_BLOB_CONNECTION_STRING")
+    read_sas_url = os.getenv("STORAGE_ACCOUNT_testazurestorage_read_SAS_URL")
 
-    sas_url = os.getenv("STORAGE_ACCOUNT_testazurestorage_write_SAS_URL")
+    sas_write_url = os.getenv("STORAGE_ACCOUNT_testazurestorage_write_SAS_URL")
     credential = AzureKeyCredential(search_api_key)
     index_name = "law2006"
     azure_ada_openai_config = {
@@ -37,7 +39,7 @@ if __name__ == "__main__":
 
     try:
         # Step 0: upload the data
-        uploader = AzureBlobUploader(sas_url)
+        uploader = AzureBlobUploader(sas_write_url)
         uploader.upload_file(file_path, file_name)
     except Exception as e:
         print(e)
@@ -46,7 +48,8 @@ if __name__ == "__main__":
     try:
         # Step 1: Create data source
         azureSearch = AzureDataSource(search_endpoint, AzureKeyCredential(search_api_key))
-        azureSearch.create_data_source(data_source_name)
+        # azureSearch.create_data_source(data_source_name, container_name, "ContainerSharedAccessUri=" + read_sas_url)
+        azureSearch.create_data_source(data_source_name, container_name, connection_string)
     except Exception as e:
         print(e)        
 

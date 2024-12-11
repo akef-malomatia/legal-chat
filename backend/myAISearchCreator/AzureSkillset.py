@@ -6,11 +6,12 @@ from azure.search.documents.indexes.models import (
     AzureOpenAIEmbeddingSkill,
     SearchIndexerSkillset,
     SplitSkill,
-    SearchIndexerIndexProjections,
+    SearchIndexerIndexProjection,
     SearchIndexerIndexProjectionSelector,
     SearchIndexerIndexProjectionsParameters,
     LanguageDetectionSkill
 )
+
 
 import os
 from dotenv import load_dotenv
@@ -92,8 +93,8 @@ class AzureOpenAISkillset:
         return AzureOpenAIEmbeddingSkill(
             description="Skill to generate embeddings for chunks via Azure OpenAI",
             context="/document/pages/*",
-            resource_uri=self.ada_openai_config['endpoint'],
-            deployment_id=self.ada_openai_config['deployment_id'],
+            resource_url=self.ada_openai_config['endpoint'],
+            deployment_name=self.ada_openai_config['deployment_id'],
             model_name=self.ada_openai_config['model_name'],
             dimensions=self.ada_openai_config['dimensions'],
             api_key=self.ada_openai_config['api_key'],
@@ -119,7 +120,7 @@ class AzureOpenAISkillset:
             name=self.skillset_name,
             description="Skillset to chunk documents and generate embeddings",
             skills=skills,
-            index_projections=SearchIndexerIndexProjections(
+            index_projection=SearchIndexerIndexProjection(
                 selectors=[
                     SearchIndexerIndexProjectionSelector(
                         target_index_name=self.index_name,

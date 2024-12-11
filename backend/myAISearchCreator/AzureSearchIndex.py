@@ -6,7 +6,7 @@ from azure.search.documents.indexes.models import (
     HnswAlgorithmConfiguration,
     VectorSearchProfile,
     AzureOpenAIVectorizer,
-    AzureOpenAIParameters,
+    AzureOpenAIVectorizerParameters,
     SemanticConfiguration,
     SemanticSearch,
     SemanticPrioritizedFields,
@@ -41,7 +41,7 @@ class AzureSearchIndex:
                 name="parent_id",
                 type=SearchFieldDataType.String,
                 searchable=False,
-                filterable=False,
+                filterable=True,
                 facetable=False,
                 sortable=False,
                 stored=True,
@@ -87,7 +87,7 @@ class AzureSearchIndex:
                 filterable=False,
                 facetable=False,
                 sortable=False,
-                retrievable=True,
+                # retrievable=True,
                 stored=True,
                 vector_search_dimensions=1536,
                 vector_search_profile_name=f"{self.index_name}-vector-profile"
@@ -108,16 +108,16 @@ class AzureSearchIndex:
                 VectorSearchProfile(
                     name=f"{self.index_name}-vector-profile",
                     algorithm_configuration_name=f"{self.index_name}-algorithm",
-                    vectorizer=f"{self.index_name}-vectorizer",
+                    vectorizer_name=f"{self.index_name}-vectorizer",
                 )
             ],
             vectorizers=[
                 AzureOpenAIVectorizer(
-                    name=f"{self.index_name}-vectorizer",
+                    vectorizer_name=f"{self.index_name}-vectorizer",
                     kind="azureOpenAI",
-                    azure_open_ai_parameters=AzureOpenAIParameters(
-                        resource_uri=self.ada_config["endpoint"],
-                        deployment_id=self.ada_config["deployment_id"],
+                    parameters=AzureOpenAIVectorizerParameters(
+                        resource_url=self.ada_config["endpoint"],
+                        deployment_name=self.ada_config["deployment_id"],
                         model_name=self.ada_config["model_name"],
                         api_key=self.ada_config["api_key"],
                     ),
