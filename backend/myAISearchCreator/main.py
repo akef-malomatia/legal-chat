@@ -35,37 +35,53 @@ if __name__ == "__main__":
     skillset_name = f"{index_name}-skillset"
     indexer_name = f"{index_name}-indexer"
 
-    # Step 0: upload the data
-    uploader = AzureBlobUploader(sas_url)
-    uploader.upload_file(file_path, file_name)
+    try:
+        # Step 0: upload the data
+        uploader = AzureBlobUploader(sas_url)
+        uploader.upload_file(file_path, file_name)
+    except Exception as e:
+        print(e)
 
-    # Step 1: Create data source
-    azureSearch = AzureDataSource(search_endpoint, AzureKeyCredential(search_api_key))
-    azureSearch.create_data_source(data_source_name)
 
-    # Step 2: Create the index
-    law_index = AzureSearchIndex(search_endpoint, credential, index_name, azure_ada_openai_config)
-    law_index.create_index()
+    try:
+        # Step 1: Create data source
+        azureSearch = AzureDataSource(search_endpoint, AzureKeyCredential(search_api_key))
+        azureSearch.create_data_source(data_source_name)
+    except Exception as e:
+        print(e)        
 
-    # Step 3: Create the skillset
-    skillset = AzureOpenAISkillset(
-        search_endpoint,
-        AzureKeyCredential(search_api_key),
-        azure_ada_openai_config,
-        index_name,
-        skillset_name
-    )
-    skillset.create_skillset()
+    try:
+        # Step 2: Create the index
+        law_index = AzureSearchIndex(search_endpoint, credential, index_name, azure_ada_openai_config)
+        law_index.create_index()
+    except Exception as e:
+        print(e)    
 
-    # Step 4: Create the indexer
-    manager = AzureSearchIndexer(
-        search_endpoint,
-        AzureKeyCredential(search_api_key),
-        index_name,
-        skillset_name,
-        data_source_name,
-        indexer_name
-    )
+    try:
+        # Step 3: Create the skillset
+        skillset = AzureOpenAISkillset(
+            search_endpoint,
+            AzureKeyCredential(search_api_key),
+            azure_ada_openai_config,
+            index_name,
+            skillset_name
+        )
+        skillset.create_skillset()
+    except Exception as e:
+        print(e)  
+
+    try:
+        # Step 4: Create the indexer
+        manager = AzureSearchIndexer(
+            search_endpoint,
+            AzureKeyCredential(search_api_key),
+            index_name,
+            skillset_name,
+            data_source_name,
+            indexer_name
+        )
+    except Exception as e:
+        print(e)
 
     try:
         manager.create_indexer()

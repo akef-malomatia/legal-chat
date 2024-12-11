@@ -1,38 +1,19 @@
+from azure.search.documents.indexes import SearchIndexerClient
+from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.indexes.models import (
     InputFieldMappingEntry,
     OutputFieldMappingEntry,
     AzureOpenAIEmbeddingSkill,
-    SearchIndexerSkillset
-)
-from azure.search.documents.indexes import SearchIndexerClient
-from azure.core.credentials import AzureKeyCredential
-
-import os
-from dotenv import load_dotenv
-
-from azure.search.documents.indexes._generated.models import (
     SearchIndexerSkillset,
+    SplitSkill,
     SearchIndexerIndexProjections,
     SearchIndexerIndexProjectionSelector,
     SearchIndexerIndexProjectionsParameters,
-    InputFieldMappingEntry,
-    OutputFieldMappingEntry
+    LanguageDetectionSkill
 )
 
-from azure.search.documents.indexes.models import (
-    InputFieldMappingEntry,
-    OutputFieldMappingEntry,
-    AzureOpenAIEmbeddingSkill,
-    SearchIndexerSkillset,
-)
-
-from azure.search.documents.indexes.models import (
-    InputFieldMappingEntry,
-    OutputFieldMappingEntry,
-    AzureOpenAIEmbeddingSkill,
-    SearchIndexerSkillset,
-    SplitSkill
-)
+import os
+from dotenv import load_dotenv
 
 class AzureOpenAISkillset:
     def __init__(self, endpoint, credential, ada_openai_config, index_name, skillset_name):
@@ -60,24 +41,67 @@ class AzureOpenAISkillset:
             page_overlap_length=500,
             # unit="characters"
         )
+    
+    # Not supported in Qatar Central
+    # def create_language_detection_skill(self):
 
-    def create_embedding_skill(self, description, context, input_source, output_target):
+    #     return LanguageDetectionSkill(
+    #         context="/document/pages/*",
+    #         inputs=[
+    #             InputFieldMappingEntry(name="text", source="/*"),
+    #         ],
+    #         outputs=[
+    #             OutputFieldMappingEntry(name="languageCode", target_name="languageCode"),
+    #             OutputFieldMappingEntry(name="languageName", target_name="languageName"),
+    #         ],
+    #     )
+
+    
+    # def create_metadata_skill(self):
+    #     """
+    #     Create a skill to generate metadata for chunks using GPT-4.
+    #     """
+    #     return AzureOpenAITextSkill(
+    #         description="Generate metadata (summary, etc.) for each chunk using GPT-4",
+    #         context="/document/pages/*",
+    #         resource_uri=self.ada_openai_config['endpoint'],  # Azure OpenAI endpoint
+    #         deployment_id="gpt-4o",  # Specify GPT-4 deployment
+    #         model_name="gpt-4o",
+    #         api_key=self.ada_openai_config['api_key'],
+    #         inputs=[
+    #             InputFieldMappingEntry(name="text", source="/document/pages/*"),
+    #         ],
+    #         outputs=[
+    #             OutputFieldMappingEntry(name="summary", target_name="summary"),
+    #             OutputFieldMappingEntry(name="metadata", target_name="metadata"),
+    #         ],
+    #         # Additional parameters like temperature, max tokens, or custom instructions can be set here
+    #         parameters={
+    #             "max_tokens": 300,
+    #             "temperature": 0.7,
+    #             "top_p": 1.0,
+    #             "frequency_penalty": 0.0,
+    #             "presence_penalty": 0.0,
+    #         },
+    #     )
+
+    def create_embedding_skill(self):
         """
         Create an Azure OpenAI embedding skill.
         """
         return AzureOpenAIEmbeddingSkill(
-            description=description,
-            context=context,
+            description="Skill to generate embeddings for chunks via Azure OpenAI",
+            context="/document/pages/*",
             resource_uri=self.ada_openai_config['endpoint'],
             deployment_id=self.ada_openai_config['deployment_id'],
             model_name=self.ada_openai_config['model_name'],
             dimensions=self.ada_openai_config['dimensions'],
             api_key=self.ada_openai_config['api_key'],
             inputs=[
-                InputFieldMappingEntry(name="text", source=input_source),
+                InputFieldMappingEntry(name="text", source="/document/pages/*"),
             ],
             outputs=[
-                OutputFieldMappingEntry(name="embedding", target_name=output_target),
+                OutputFieldMappingEntry(name="embedding", target_name="vector"),
             ],
         )
 
@@ -87,12 +111,8 @@ class AzureOpenAISkillset:
         """
         skills = [
             self.create_chunking_skill(),
-            self.create_embedding_skill(
-                description="Skill to generate embeddings for chunks via Azure OpenAI",
-                context="/document/pages/*",
-                input_source="/document/pages/*",
-                output_target="vector",
-            ),
+            # self.create_language_detection_skill(),
+            self.create_embedding_skill(),
         ]
 
         skillset = SearchIndexerSkillset(
@@ -117,7 +137,16 @@ class AzureOpenAISkillset:
                             InputFieldMappingEntry(
                                 name="title",
                                 source="/document/title"
-                            )
+                            ),
+                            # InputFieldMappingEntry(
+                            #     name="languageCode",
+                            #     source="/document/pages/*/languageCode"
+                            # )
+                            # ,
+                            # InputFieldMappingEntry(
+                            #     name="languageName",
+                            #     source="/document/pages/*/languageName"
+                            # )
                         ]
                     )
                 ],
