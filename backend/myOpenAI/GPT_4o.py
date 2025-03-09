@@ -1,20 +1,16 @@
-from dotenv import load_dotenv
-import os
-
 from openai import AzureOpenAI
 
 class GPT_4o:
-    def __init__(self):
+    def __init__(self, api_key, api_version, azure_endpoint, deployment_name):
         """
         Initialize the GPT_4o class by loading environment variables and setting up the AzureOpenAI client.
         """
-        load_dotenv()
         self.client = AzureOpenAI(
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            api_version=os.getenv("AZURE_OPENAI_VERSION"),
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+            api_key=api_key,
+            api_version=api_version,
+            azure_endpoint=azure_endpoint
         )
-        self.deployment_name = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+        self.deployment_name = deployment_name
 
     def send_msg(self, system_msg: str, user_msg: str, max_tokens: int = 300):
         """

@@ -4,7 +4,7 @@ from azure.search.documents.indexes import SearchIndexerClient
 from azure.search.documents.indexes.models import (
     SearchIndexerDataSourceConnection, 
     SearchIndexerDataSourceType,
-    SearchIndexerDataContainer
+    SearchIndexerDataContainer,
 )
 
 import os
@@ -16,20 +16,17 @@ class AzureDataSource:
 
     def create_data_source(self, data_source_name, container_name, connection_string):
 
-        container = SearchIndexerDataContainer(name=container_name)
-        
         data_source = SearchIndexerDataSourceConnection(
             name=data_source_name,
             type=SearchIndexerDataSourceType.ADLS_GEN2,
             connection_string=connection_string,
-            container=container,
-            description="LAW NO. 22 of 2006 PROMULGATING 'THE FAMILY LAW'",
-            # data_deletion_detection_policy=SoftDeleteColumnDeletionDetectionPolicy(soft_delete_column_name="IsDeleted", soft_delete_marker_value="True")
+            container=SearchIndexerDataContainer(name=container_name),
         )
         # Create the data source connection in Azure
         self.indexer_client.create_data_source_connection(data_source)
         print(f"Data source '{data_source_name}' created successfully.")
 
+# Example usage
 if __name__ == "__main__":
     load_dotenv()
     search_endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")

@@ -1,6 +1,11 @@
+import uvicorn
 from LegalAssistantAPI import LegalAssistantAPI
+from flask_cors import CORS  # Import CORS
 
-# Run the application
+# Expose the app as a top-level variable
+api_app = LegalAssistantAPI()
+app = api_app.app
+
 if __name__ == "__main__":
-    api_app = LegalAssistantAPI()
-    api_app.run()
+    # Use uvicorn to run the app
+    uvicorn.run("main:app", host="localhost", port=3001, reload=True)

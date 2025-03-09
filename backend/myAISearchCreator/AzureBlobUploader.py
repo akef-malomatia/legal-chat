@@ -34,6 +34,7 @@ class AzureBlobUploader:
         except Exception as e:
             logging.error(f"Error uploading file: {str(e)}")  # Replace print with logging
 
+# Example usage
 if __name__ == "__main__":
     uploader = AzureBlobUploader()
     file_name = "LAW NO. 22 of 2006 PROMULGATING 'THE FAMILY LAW'.doc"

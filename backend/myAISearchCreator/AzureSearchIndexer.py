@@ -30,6 +30,7 @@ class AzureSearchIndexer:
                     parsing_mode=BlobIndexerParsingMode.DEFAULT,
                     query_timeout=None,
                     first_line_contains_headers=True,
+                    image_action="generateNormalizedImages"
                 )
             )
 
@@ -41,11 +42,11 @@ class AzureSearchIndexer:
                 data_source_name=self.data_source_name,
                 parameters=indexer_parameters,
                 field_mappings=[
-                    FieldMapping(
-                        source_field_name="metadata_storage_name",
-                        target_field_name="title",
-                        mapping_function=None
-                    ),
+                    # FieldMapping(
+                    #     source_field_name="metadata_storage_name",
+                    #     target_field_name="title",
+                    #     mapping_function=None
+                    # ),
                 ],
                 output_field_mappings=[]
             )
@@ -70,9 +71,9 @@ class AzureSearchIndexer:
 if __name__ == "__main__":
     load_dotenv()
     # Replace these with actual values
-    endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
-    api_key = os.getenv("AZURE_SEARCH_API_KEY")
-    index_name = "law2006"
+    endpoint = os.getenv("SEARCH_ENDPOINT")
+    api_key = os.getenv("SEARCH_API_KEY")
+    index_name = os.getenv("INDEX_NAME")
     skillset_name = f"{index_name}-skillset"
     data_source_name = f"{index_name}-blob"
 

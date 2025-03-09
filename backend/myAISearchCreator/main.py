@@ -1,80 +1,96 @@
-from AzureBlobUploader import AzureBlobUploader
+from azure.cosmos import CosmosClient
 from AzureDataSource import AzureDataSource
 from AzureSearchIndex import AzureSearchIndex
 from AzureSearchIndexer import AzureSearchIndexer
 from AzureSkillset import AzureOpenAISkillset
-
 from azure.core.credentials import AzureKeyCredential
 
 import os
 from dotenv import load_dotenv
 
-if __name__ == "__main__":
-    load_dotenv()
-    search_endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
-    openaiEndpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
-    search_api_key = os.getenv("AZURE_SEARCH_API_KEY")
-    container_name = os.getenv("CONTAINER_NAME")
-    connection_string = os.getenv("AZURE_BLOB_CONNECTION_STRING")
-    read_sas_url = os.getenv("STORAGE_ACCOUNT_testazurestorage_read_SAS_URL")
+load_dotenv()
 
-    sas_write_url = os.getenv("STORAGE_ACCOUNT_testazurestorage_write_SAS_URL")
-    credential = AzureKeyCredential(search_api_key)
-    index_name = "law2006"
-    azure_ada_openai_config = {
-        "endpoint": openaiEndpoint,
-        "deployment_id": "text-embedding-ada-002",
-        "model_name": "text-embedding-ada-002",
-        "api_key": openai_api_key,
-        "dimensions": 1536,
-    }
+# Cosmos DB details
+# cosmos_endpoint = os.getenv("COSMOS_DB_ENDPOINT")
+# cosmos_key = os.getenv("COSMOS_DB_PRIMARY_KEY")
+# database_name = "config-database"
+# container_name = "config-container"
 
-    file_name = "LAW NO. 22 of 2006 PROMULGATING 'THE FAMILY LAW'.doc"
-    file_path = os.path.join("..", "..", "..", "..", "Data Source", file_name)
-    index_name="law2006"
+# Initialize Cosmos client and fetch the configuration
+# client = CosmosClient(cosmos_endpoint, cosmos_key)
+# database = client.get_database_client(database_name)
+# container = database.get_container_client(container_name)
+
+# Fetch configuration document by "rg-ai01"
+# config_item = container.read_item(item="rg-ai01", partition_key="rg-ai01")
+
+# Extract values from the configuration document
+analyzeDocumentAzureFunc_url = os.getenv("ANALYZE_DOCUMENT_AZURE_FUNC_URL")
+splitDocumentAzureFunc_url = os.getenv("SPLIT_DOCUMENT_AZURE_FUNC_URL")
+
+# search_endpoint = config_item["ai_search"]["endpoint"]
+# search_api_key = config_item["ai_search"]["api_key"]
+# cases_index_name = config_item["ai_search"]["cases_index_name"]
+# laws_index_name = config_item["ai_search"]["laws_index_name"]
+
+search_endpoint = os.getenv("SEARCH_ENDPOINT")
+search_api_key = os.getenv("SEARCH_API_KEY")
+index_name = os.getenv("INDEX_NAME")
+
+openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+ada_deployment_name = os.getenv("AZURE_OPENAI_EMBEDDER_MODEL")
+embedding_dimensions = os.getenv("AZURE_OPENAI_EMBEDDING_DIMENSIONS")
+openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
+
+# cases_container_name = config_item["storage_account"]["cases_container_name"]
+# laws_container_name = config_item["storage_account"]["laws_container_name"]
+# connection_string = config_item["storage_account"]["blob_connection_string"]
+
+credential = AzureKeyCredential(search_api_key)
+azure_ada_openai_config = {
+    "endpoint": openai_endpoint,
+    "deployment_id": ada_deployment_name,
+    "model_name": ada_deployment_name,
+    "api_key": openai_api_key,
+    "dimensions": embedding_dimensions,
+}
+
+def createAzureSearchItems(index_name, container_name = None):
     data_source_name = f"{index_name}-blob"
     skillset_name = f"{index_name}-skillset"
     indexer_name = f"{index_name}-indexer"
 
-    try:
-        # Step 0: upload the data
-        uploader = AzureBlobUploader(sas_write_url)
-        uploader.upload_file(file_path, file_name)
-    except Exception as e:
-        print(e)
+    # Step 1: Create data source
+    # try:
+    #     azureSearch = AzureDataSource(search_endpoint, AzureKeyCredential(search_api_key))
+    #     azureSearch.create_data_source(data_source_name, container_name, connection_string)
+    # except Exception as e:
+    #     print(f"Error creating data source: {e}")
 
-
+    # Step 2: Create the index
     try:
-        # Step 1: Create data source
-        azureSearch = AzureDataSource(search_endpoint, AzureKeyCredential(search_api_key))
-        # azureSearch.create_data_source(data_source_name, container_name, "ContainerSharedAccessUri=" + read_sas_url)
-        azureSearch.create_data_source(data_source_name, container_name, connection_string)
-    except Exception as e:
-        print(e)        
-
-    try:
-        # Step 2: Create the index
         law_index = AzureSearchIndex(search_endpoint, credential, index_name, azure_ada_openai_config)
         law_index.create_index()
     except Exception as e:
-        print(e)    
+        print(f"Error creating index: {e}")
 
+    # Step 3: Create the skillset
     try:
-        # Step 3: Create the skillset
         skillset = AzureOpenAISkillset(
             search_endpoint,
             AzureKeyCredential(search_api_key),
             azure_ada_openai_config,
             index_name,
-            skillset_name
+            skillset_name,
+            analyzeDocumentAzureFunc_url,
+            splitDocumentAzureFunc_url
         )
         skillset.create_skillset()
     except Exception as e:
-        print(e)  
+        print(f"Error creating skillset: {e}")
 
+    # Step 4: Create the indexer
     try:
-        # Step 4: Create the indexer
         manager = AzureSearchIndexer(
             search_endpoint,
             AzureKeyCredential(search_api_key),
@@ -84,17 +100,17 @@ if __name__ == "__main__":
             indexer_name
         )
     except Exception as e:
-        print(e)
-
-    try:
-        manager.create_indexer()
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"Error creating indexer: {e}")
 
     # Step 5: Run the indexer
     try:
+        manager.create_indexer()
         manager.run_indexer()
     except Exception as e:
-        print(f"An error occurred: {e}")
-    
-    
+        print(f"Error running indexer: {e}")
+
+
+# createAzureSearchItems(cases_index_name, cases_container_name)
+# createAzureSearchItems(laws_index_name, laws_container_name)
+
+createAzureSearchItems(index_name)

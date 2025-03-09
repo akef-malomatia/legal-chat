@@ -29,7 +29,7 @@ class AzureSearchIndex:
         # Define the fields for the index
         fields = [
             SearchField(
-                name="chunk_id",
+                name="chunkId",
                 type=SearchFieldDataType.String,
                 key=True,
                 filterable=False,
@@ -47,7 +47,15 @@ class AzureSearchIndex:
                 stored=True,
             ),
             SearchField(
-                name="chunk",
+                name="page_numbers",
+                type=SearchFieldDataType.Collection(SearchFieldDataType.Int32),
+                filterable=False,
+                sortable=False,
+                facetable=False,
+                stored=True,
+            ),
+            SearchField(
+                name="text",
                 type=SearchFieldDataType.String,
                 filterable=False,
                 sortable=False,
@@ -55,7 +63,31 @@ class AzureSearchIndex:
                 stored=True,
             ),
             SearchField(
-                name="title",
+                name="name",
+                type=SearchFieldDataType.String,
+                filterable=False,
+                sortable=False,
+                facetable=False,
+                stored=True,
+            ),
+            SearchField(
+                name="chunkSeqId",
+                type=SearchFieldDataType.Int32,
+                filterable=False,
+                sortable=False,
+                facetable=False,
+                stored=True,
+            ),
+            SearchField(
+                name="docId",
+                type=SearchFieldDataType.String,
+                filterable=False,
+                sortable=False,
+                facetable=False,
+                stored=True,
+            ),
+            SearchField(
+                name="docName",
                 type=SearchFieldDataType.String,
                 filterable=False,
                 facetable=False,
@@ -81,7 +113,7 @@ class AzureSearchIndex:
             #     stored=True,
             # ),
             SearchField(
-                name="vector",
+                name="content_vector",
                 type=SearchFieldDataType.Collection(SearchFieldDataType.Single),
                 searchable=True,
                 filterable=False,
@@ -129,8 +161,8 @@ class AzureSearchIndex:
         semantic_config = SemanticConfiguration(
             name=f"{self.index_name}-semantic-config",
             prioritized_fields=SemanticPrioritizedFields(
-                title_field=SemanticField(field_name="title"),
-                content_fields=[SemanticField(field_name="chunk")],
+                title_field=SemanticField(field_name="docName"),
+                content_fields=[SemanticField(field_name="text")],
             ),
         )
         semantic_search = SemanticSearch(configurations=[semantic_config])
@@ -148,7 +180,7 @@ class AzureSearchIndex:
         print(f"Index '{result.name}' created successfully.")
 
 
-# Example usage of the class
+# Example usage
 if __name__ == "__main__":
     load_dotenv()
     endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
