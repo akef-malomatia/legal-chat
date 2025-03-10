@@ -47,8 +47,8 @@ class AzureSearchIndex:
                 stored=True,
             ),
             SearchField(
-                name="page_numbers",
-                type=SearchFieldDataType.Collection(SearchFieldDataType.Int32),
+                name="page_number",
+                type=SearchFieldDataType.Int32,
                 filterable=False,
                 sortable=False,
                 facetable=False,
@@ -88,6 +88,14 @@ class AzureSearchIndex:
             ),
             SearchField(
                 name="docName",
+                type=SearchFieldDataType.String,
+                filterable=False,
+                facetable=False,
+                sortable=False,
+                stored=True,
+            ),
+            SearchField(
+                name="source",
                 type=SearchFieldDataType.String,
                 filterable=False,
                 facetable=False,

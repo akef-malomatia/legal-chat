@@ -80,6 +80,7 @@ class AzureOpenAISkillset:
             inputs=[
                 InputFieldMappingEntry(name="docId", source="/document/metadata_storage_path"),
                 InputFieldMappingEntry(name="doc_name", source="/document/metadata_storage_name"),
+                InputFieldMappingEntry(name="doc_url", source="/document/metadata_storage_path"),
                 InputFieldMappingEntry(name="pages", source="/document/pages"),
             ],
             outputs=[
@@ -209,7 +210,7 @@ class AzureOpenAISkillset:
                         source_context="/document/chunks/*",
                         mappings=[
                             InputFieldMappingEntry(
-                                name="page_numbers", source="/document/chunks/*/pageNumbers"
+                                name="page_number", source="/document/chunks/*/pageNumber"
                             ),
                             # InputFieldMappingEntry(
                             #     name="chunk", source="/document/chunks/*"
@@ -231,6 +232,8 @@ class AzureOpenAISkillset:
                             # ),
                             InputFieldMappingEntry(
                                 name="docName", source="/document/chunks/*/docName"
+                            ),InputFieldMappingEntry(
+                                name="source", source="/document/chunks/*/source"
                             ),
                             InputFieldMappingEntry(
                                 name="content_vector", source="/document/chunks/*/content_vector"
